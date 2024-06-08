@@ -14,3 +14,4 @@ app.get('/',(req,res)=>{
 app.get('/news',(req,res)=>{
     res.send('news')
 })
+
