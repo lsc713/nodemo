@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express')
 const app = express()
 
@@ -9,7 +10,7 @@ app.use(express.urlencoded({extended:true}))
 const { MongoClient } = require('mongodb')
 
 let db
-const url = 'mongodb+srv://admin:???@cluster0.iykywxd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+const url = process.env.MONGODB_URI
 new MongoClient(url).connect().then((client)=>{
     console.log('DB연결성공')
     db = client.db('posting')
@@ -48,18 +49,18 @@ app.get('/write', (req,res)=>{
     res.render('write.ejs')
 })
 
-app.post('/newpost', (req,res)=>{
-    const postData = {
-        title: req.body.title,
-        contents: req.body.contents
-    }
-    db.collection('post').insertOne(postData,(err,result)=>{
-        if(err){
-            res.status(500).send('Error inserting documents')
-        } else{
-            res.status(200).send('Document inserted')
+app.post('/newpost', async (req,res)=>{
+
+    try{
+        if(req.body.title === ""){
+            res.send('not allowed')
+        } else {
+            await db.collection('post').insertOne({title:req.body.title,contents:req.body.contents})
+            res.redirect('/list')
         }
-    })
-    console.log(req.body)
+    }catch (e) {
+        console.log(e)
+        res.status(500).send("error occured")
+    }
 })
 
