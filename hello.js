@@ -65,9 +65,16 @@ app.post('/newpost', async (req,res)=>{
 })
 
 app.get('/detail/:id', async (req,res)=>{
+
+    try {
         let result = await db.collection('post').findOne({_id: new ObjectId(req.params.id)})
         res.render('detail.ejs',{result:result})
-        console.log(result)
-
+        if (result == null) {
+            res.send("not allowed")
+        }
+        console.log(result);
+    }catch (e) {
+        res.send("that's nono")
+    }
 })
 
