@@ -7,7 +7,7 @@ app.set('view engine', 'ejs')
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
-const { MongoClient } = require('mongodb')
+const { MongoClient,ObjectId } = require('mongodb')
 
 let db
 const url = process.env.MONGODB_URI
@@ -62,5 +62,12 @@ app.post('/newpost', async (req,res)=>{
         console.log(e)
         res.status(500).send("error occured")
     }
+})
+
+app.get('/detail/:id', async (req,res)=>{
+        let result = await db.collection('post').findOne({_id: new ObjectId(req.params.id)})
+        res.render('detail.ejs',{result:result})
+        console.log(result)
+
 })
 
