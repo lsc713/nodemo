@@ -8,21 +8,19 @@
     <title>Document</title>
     <link href="/main.css" rel="stylesheet">
 </head>
+<body>
 <body class="grey-bg">
-<%- include('nav.ejs') %>
 <div class="white-bg">
-    <%for (let i = 0 ; i < posts.length; i++){%>
-    <div class="list-box">
-        <h4>
-            <a href="/detail/<%= posts[i]._id %>">
-                <%= posts[i].title %>
-            </a>
-            <a href="/edit/<%= posts[i]._id %>">✏️</a>
-        </h4>
-        <p><%= posts[i].contents%>></p>
-    </div>
-    <%}%>
+    <%- include('nav.ejs') %>
+    <form class="form-box" action="/edit" method="POST">
+        <h4>수정하기</h4>
+        <input name="id" value="<%= result._id%>" style="display: none">
+        <input name="title" value="<%= result.title %>">
+        <input name="contents" value="<%= result.contents %>">
+        <button type="submit">전송</button>
+    </form>
 </div>
 
+</body>
 </body>
 </html>

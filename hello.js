@@ -78,3 +78,13 @@ app.get('/detail/:id', async (req,res)=>{
     }
 })
 
+app.get('/edit/:id', async (req, res) => {
+    let result = await db.collection('post').findOne({ _id : new ObjectId(req.params.id)})
+    res.render('edit.ejs',{result : result})
+});
+
+app.post('/edit', async (req, res) => {
+    let result = await db.collection('post').updateOne({ _id : new ObjectId(req.body.id)},
+        {$set : {title : req.body.title ,contents : req.body.contents }})
+    res.redirect('/list')
+});
