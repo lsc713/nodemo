@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express')
 const app = express()
 const methodOverride = require('method-override')
+const bcrypt = require('bcrypt')
+const MongoStore = require('connect-mongo')
 
 app.use(methodOverride('_method'))
 app.use(express.static(__dirname+'/public'))
@@ -18,7 +20,11 @@ app.use(session({
     secret: '암호화에 쓸 비번',
     resave : false,
     saveUninitialized : false,
-    cookie : {maxAge : 60*60*1000}
+    cookie : {maxAge : 60*60*1000},
+    store : MongoStore.create({
+        mongoUrl : process.env.MONGODB_URI,
+        dbName : 'posting'
+    })
 }))
 
 app.use(passport.session())
@@ -122,12 +128,12 @@ app.get('/list/next/:id',async (req,res)=>{
     res.render('list.ejs',{posts : result})
 })
 
-passport.use(new LocalStrategy(async (입력한아이디, 입력한비번, cb) => {
-    let result = await db.collection('user').findOne({ username : 입력한아이디})
+passport.use(new LocalStrategy(async (inputId, inputPassword, cb) => {
+    let result = await db.collection('user').findOne({ username : inputId})
     if (!result) {
         return cb(null, false, { message: '아이디 DB에 없음' })
     }
-    if (result.password == 입력한비번) {
+    if (await bcrypt.compare(inputPassword, result.password)) {
         return cb(null, result)
     } else {
         return cb(null, false, { message: '비번불일치' });
@@ -148,7 +154,7 @@ passport.deserializeUser(async (user, done) => {
     })
 })
 
-app.get('/login', async (req, res) => {
+app.get('/login', (req, res) => {
     console.log(req.user)
     res.render('login.ejs')
 });
@@ -163,3 +169,16 @@ app.post('/login',async (req,res,next)=>{
         })
     })(req,res,next)
 })
+
+app.get('/register',(req,res)=>{
+    res.render('register.ejs')
+})
+
+app.post('/register', async (req, res) => {
+   let password = await bcrypt.hash(req.body.password, 10)
+    await db.collection('user').insertOne({
+        username: req.body.username,
+        password: password
+    })
+    res.redirect("/")
+});
