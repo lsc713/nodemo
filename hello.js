@@ -35,18 +35,14 @@ let db
 const url = process.env.MONGODB_URI
 new MongoClient(url).connect().then((client)=>{
     console.log('DB연결성공')
-    db = client.db('posting')
+    db = client.db(process.env.DB_NAME1)
 
-    app.listen(8083, () => {
-        console.log('http://localhost:8080 에서 서버 실행중')
+    app.listen(process.env.PORT, () => {
+        console.log('http://localhost:8080 에서 서버 실행중일까?')
     })
 
 }).catch((err)=>{
     console.log(err)
-})
-
-app.listen(8080, ()=>{
-    console.log('http://localhost:8080')
 })
 
 app.get('/',(req,res)=>{
