@@ -24,6 +24,7 @@
     </div>
     <%}%>
 </div>
+<a href="/list/next/<%= posts[posts.length-1]._id %>">next</a>
 
 <script>
     document.querySelectorAll('.delete').forEach(button=>{
@@ -36,7 +37,7 @@
           },
           body: JSON.stringify({id: postId})
         }).then(response => {
-          location.reload();
+          response.text;
         }).catch(e => console.error("Error:", e));
     });
     });
