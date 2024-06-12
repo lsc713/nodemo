@@ -15,9 +15,30 @@ const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
 
+const { S3Client } = require('@aws-sdk/client-s3')
+const multer = require('multer')
+const multerS3 = require('multer-s3')
+const s3 = new S3Client({
+    region : 'ap-northeast-2',
+    credentials : {
+        accessKeyId : process.env.AWSS3_A,
+        secretAccessKey : process.env.AWSS3_SA
+    }
+})
+
+const upload = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: 'nodebuckets3test',
+        key: function (요청, file, cb) {
+            cb(null, Date.now().toString()) //업로드시 파일명 변경가능
+        }
+    })
+})
+
 app.use(passport.initialize())
 app.use(session({
-    secret: '암호화에 쓸 비번',
+    secret: process.env.SSPW,
     resave : false,
     saveUninitialized : false,
     cookie : {maxAge : 60*60*1000},
@@ -67,13 +88,13 @@ app.get('/write', (req,res)=>{
     res.render('write.ejs')
 })
 
-app.post('/newpost', async (req,res)=>{
-
+app.post('/newpost', upload.single('img1'), async (req,res)=>{
     try{
         if(req.body.title === ""){
             res.send('not allowed')
         } else {
-            await db.collection('post').insertOne({title:req.body.title,contents:req.body.contents})
+            await db.collection('post').insertOne(
+                {title:req.body.title,contents:req.body.contents, img:req.file.location})
             res.redirect('/list')
         }
     }catch (e) {
