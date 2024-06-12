@@ -1,7 +1,9 @@
 require('dotenv').config();
 const express = require('express')
 const app = express()
+const methodOverride = require('method-override')
 
+app.use(methodOverride('_method'))
 app.use(express.static(__dirname+'/public'))
 app.set('view engine', 'ejs')
 app.use(express.json())
@@ -83,8 +85,13 @@ app.get('/edit/:id', async (req, res) => {
     res.render('edit.ejs',{result : result})
 });
 
-app.post('/edit', async (req, res) => {
+app.put('/edit', async (req, res) => {
     let result = await db.collection('post').updateOne({ _id : new ObjectId(req.body.id)},
         {$set : {title : req.body.title ,contents : req.body.contents }})
     res.redirect('/list')
+});
+
+app.delete('/delete', async (req, res) => {
+    let result = await db.collection('post').deleteOne({ _id : new ObjectId(req.body.id)})
+    res.send('delete Complete')
 });

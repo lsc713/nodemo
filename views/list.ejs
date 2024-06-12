@@ -18,11 +18,29 @@
                 <%= posts[i].title %>
             </a>
             <a href="/edit/<%= posts[i]._id %>">✏️</a>
+            <span class="delete" data-id="<%= posts[i]._id%>">삭제</span>
         </h4>
         <p><%= posts[i].contents%>></p>
     </div>
     <%}%>
 </div>
+
+<script>
+    document.querySelectorAll('.delete').forEach(button=>{
+      button.addEventListener('click',function () {
+        const postId = this.getAttribute('data-id');
+        fetch('/delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({id: postId})
+        }).then(response => {
+          location.reload();
+        }).catch(e => console.error("Error:", e));
+    });
+    });
+</script>
 
 </body>
 </html>
