@@ -52,9 +52,10 @@ app.use(passport.session())
 
 const { MongoClient,ObjectId } = require('mongodb')
 
+let connectDB = require('./database')
+
 let db
-const url = process.env.MONGODB_URI
-new MongoClient(url).connect().then((client)=>{
+connectDB.then((client)=>{
     console.log('DB연결성공')
     db = client.db(process.env.DB_NAME1)
 
@@ -199,3 +200,5 @@ app.post('/register', async (req, res) => {
     })
     res.redirect("/")
 });
+
+app.use('/',require('./routes/test'))
