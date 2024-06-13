@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="/main.css" rel="stylesheet">
+</head>
+<body class="grey-bg">
+<%- include('nav.ejs') %>
+
+<input class="search">
+<button class="search-send">search</button>
+
+<script>
+  document.querySelector('.search-send').addEventListener('click',function(){
+    let input = document.querySelector('.search').value
+    location.href = "/search?val="+ input
+  })
+
+</script>
+<h4>검색 결과</h4>
+<div class="white-bg">
+    <%for (let i = 0 ; i < posts.length; i++){%>
+        <div class="list-box">
+            <h4>
+                <a href="/detail/<%= posts[i]._id %>">
+                    <%= posts[i].title %>
+                </a>
+                <a href="/edit/<%= posts[i]._id %>">✏️</a>
+                <span class="delete" data-id="<%= posts[i]._id%>">삭제</span>
+            </h4>
+            <p><%= posts[i].contents%>></p>
+        </div>
+    <%}%>
+</div>
+
+</body>
+</html>

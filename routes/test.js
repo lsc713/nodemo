@@ -1,7 +1,6 @@
 const connectDB = require("../database");
 const router = require('express').Router()
 
-let connectDB = require('./../database')
 
 let db
 connectDB.then((client)=>{

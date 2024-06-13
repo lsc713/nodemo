@@ -201,4 +201,19 @@ app.post('/register', async (req, res) => {
     res.redirect("/")
 });
 
-app.use('/',require('./routes/test'))
+app.use('/', require('./routes/test'));
+
+// app.get('/search',async (req,res)=>{
+//     console.log(req.query.val)
+//     let result = await db.collection('post')
+//     .find({title: {$regex : req.query.val}}).toArray()
+//     res.render('search.ejs',{posts:result})
+// })
+
+app.get('/search',async (req,res)=>{
+    console.log(req.query.val)
+    let result = await db.collection('post')
+    .find({$text: {$search : req.query.val}}).toArray()
+    console.log(result)
+    res.render('search.ejs',{posts:result})
+})
