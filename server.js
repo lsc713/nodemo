@@ -213,7 +213,7 @@ app.use('/', require('./routes/test'));
 app.get('/search',async (req,res)=>{
     console.log(req.query.val)
     let result = await db.collection('post')
-    .find({$text: {$search : req.query.val}}).toArray()
+    .find({$text: {$search : req.query.val}}).explain('executionStats')
     console.log(result)
     res.render('search.ejs',{posts:result})
 })
