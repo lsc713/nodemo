@@ -212,8 +212,14 @@ app.use('/', require('./routes/test'));
 
 app.get('/search',async (req,res)=>{
     console.log(req.query.val)
+    let searchCondition = [
+        {$search : {
+                index : 'title_index',
+                text : { query : req.query.val, path : 'title' }
+            }}
+    ]
     let result = await db.collection('post')
-    .find({$text: {$search : req.query.val}}).explain('executionStats')
+    .aggregate(searchCondition).toArray()
     console.log(result)
     res.render('search.ejs',{posts:result})
 })
