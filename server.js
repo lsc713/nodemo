@@ -109,10 +109,11 @@ app.post('/newpost', upload.single('img1'), async (req,res)=>{
 })
 
 app.get('/detail/:id', async (req,res)=>{
+    let result2 = await db.collection('comment').find({parentId : new ObjectId(req.params.id)}).toArray()
 
     try {
         let result = await db.collection('post').findOne({_id: new ObjectId(req.params.id)})
-        res.render('detail.ejs',{result:result})
+        res.render('detail.ejs',{result:result, result2:result2})
         if (result == null) {
             res.send("not allowed")
         }
@@ -120,6 +121,8 @@ app.get('/detail/:id', async (req,res)=>{
     }catch (e) {
         res.send("that's nono")
     }
+
+
 })
 
 app.get('/edit/:id', async (req, res) => {
@@ -228,4 +231,14 @@ app.get('/search',async (req,res)=>{
     .aggregate(searchCondition).toArray()
     console.log(result)
     res.render('search.ejs',{posts:result})
+})
+
+app.post('/comment',async (req,res)=>{
+    await db.collection('comment').insertOne({
+        content:req.body.content,
+        writerId: new ObjectId(req.user._id),
+        writer: req.user.username,
+        parentId: new ObjectId(req.body.parentId)
+    })
+    res.redirect('back')
 })
