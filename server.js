@@ -95,7 +95,11 @@ app.post('/newpost', upload.single('img1'), async (req,res)=>{
             res.send('not allowed')
         } else {
             await db.collection('post').insertOne(
-                {title:req.body.title,contents:req.body.contents, img:req.file.location})
+                {title:req.body.title,
+                contents:req.body.contents,
+                img:req.file ? req.file.location : '',
+                user: req.user._id,
+                username : req.user.username})
             res.redirect('/list')
         }
     }catch (e) {
@@ -130,7 +134,9 @@ app.put('/edit', async (req, res) => {
 });
 
 app.delete('/delete', async (req, res) => {
-    let result = await db.collection('post').deleteOne({ _id : new ObjectId(req.body.id)})
+    let result = await db.collection('post').deleteOne({
+        _id : new ObjectId(req.body.id),
+        user : new ObjectId(req.user._id)})
     res.send('delete Complete')
 });
 
@@ -165,7 +171,7 @@ passport.serializeUser((user, done) => {
 })
 
 passport.deserializeUser(async (user, done) => {
-    let result = db.collection('user').findOne({_id : new ObjectId(user.id)})
+    let result = await db.collection('user').findOne({_id : new ObjectId(user.id)})
     delete result.password
     process.nextTick(() => {
         done(null, result)
