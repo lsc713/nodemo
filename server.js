@@ -5,6 +5,11 @@ const methodOverride = require('method-override')
 const bcrypt = require('bcrypt')
 const MongoStore = require('connect-mongo')
 
+const { createServer } = require('http')
+const { Server } = require('socket.io')
+const server = createServer(app)
+const io = new Server(server)
+
 app.use(methodOverride('_method'))
 app.use(express.static(__dirname+'/public'))
 app.set('view engine', 'ejs')
@@ -59,7 +64,7 @@ connectDB.then((client)=>{
     console.log('DB연결성공')
     db = client.db(process.env.DB_NAME1)
 
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
         console.log('http://localhost:8080 에서 서버 실행중일까?')
     })
 
@@ -242,3 +247,40 @@ app.post('/comment',async (req,res)=>{
     })
     res.redirect('back')
 })
+
+app.get('/chat/request',async(req,res)=>{
+    let chatroom = await db.collection('chatroom').insertOne({
+        member:[req.user._id, new ObjectId(req.query.writerId)],
+        date: new Date(),
+    });
+    res.status(201).redirect('/chat/list');
+})
+
+
+app.get('/chat/list', async(req,res)=>{
+    let result = await db.collection('chatroom').find({member : req.user._id}).toArray();
+    if(!result){
+        return res.status(404).send("chatroom not found");
+    }
+    res.render('chatList.ejs',{result : result})
+})
+
+app.get('/chat/detail/:id', async(req,res)=>{
+    let result = await db.collection('chatroom').findOne({_id : new ObjectId(req.params.id)});
+    if(!result){
+        return res.status(404).send("chatroom not found");
+    }
+    res.render('chatDetail.ejs',{result : result})
+})
+
+io.on('connection',(socket)=>{
+    socket.on('ask-join',(data)=>{
+        socket.join(data)
+    })
+
+    socket.on('message-send',(data)=>{
+        console.log(data)
+        io.to(data.room).emit('message-broadcast',data.msg)
+    })
+})
+
