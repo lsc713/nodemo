@@ -60,9 +60,16 @@ const { MongoClient,ObjectId } = require('mongodb')
 let connectDB = require('./database')
 
 let db
+let changeStream
 connectDB.then((client)=>{
     console.log('DB연결성공')
     db = client.db(process.env.DB_NAME1)
+
+    let condition = [
+        { $match : {operationType : 'insert'}}
+    ]
+
+    changeStream = db.collection('post').watch()
 
     server.listen(process.env.PORT, () => {
         console.log('http://localhost:8080 에서 서버 실행중일까?')
@@ -82,7 +89,6 @@ app.get('/news',(req,res)=>{
 
 app.get('/list',async (req,res)=>{
     let result = await db.collection('post').find().toArray()
-    console.log(result)
     res.render('list.ejs',{posts : result})
 })
 
@@ -284,3 +290,19 @@ io.on('connection',(socket)=>{
     })
 })
 
+app.get('/stream/list', (req,res)=>{
+    res.writeHead(200,{
+        "Connection": "keep-alive",
+        "Content-Type": "text/event-stream",
+        "Cache-Control": 'no-cache',
+    })
+
+
+    changeStream.on('change',(result)=>{
+        console.log(result)
+        res.write('event: msg\n')
+        res.write(`data: ${JSON.stringify(result.fullDocument)}\n\n`)
+    })
+
+
+})
